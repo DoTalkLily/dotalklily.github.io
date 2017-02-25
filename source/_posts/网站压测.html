@@ -1,0 +1,82 @@
+---
+layout: post
+title:  网站压测总结
+date:   2015-05-04 08:43:59
+author: Lily
+categories: backend
+tags:
+- ab
+- btrace
+- 网站压测
+---
+
+<div><span style="font: 10.5px 'Trebuchet MS'; font-kerning: none; -webkit-text-stroke: 0px #000000">第一次压测网站，总结下。<br/>
+<br/>
+采用Apache的ab压测，在Apache\bin 下，官方参数种类很多，这里主要用：<br/>
+D:\Apache\bin&gt;ab -n 10 -c 10 -H “Cookie:_ga=GA1.2.402232089.1425897773;an=accountxxx;c_token=xxxx;ck2=ssss;isg=D584668611BBBD50EDF249BFBF9C3B7CF9CE3642A2F885E7;lg=true;lvc=sAmHOnw5DDeK7w%3D%3D;sg=0c2"  <a href="http://a.b.com"><span style="font-kerning: none; color: #0433ff; -webkit-text-stroke: 0px #0433ff"><u>http://a.b.com</u></span></a>(要压测的网址)<br/><br/>
+-n是请求次数，-c是并发请求数量，-H 设置请求头部， 这里由于要压测的网站需要登录后访问，因此这里如果不加cookie内容是访问登录页面速度，因此需要加cookie内容。<br/>
+结果如下：<br/> <br/><img src="/images/2015-05-04/B7434509-17F9-4386-8AD1-AC6A7F78A933.png" height="1166" width="1178"/><br/>
+Ab也可以对单个http接口做压测，但是本项目接口需要发送token 因此没法使用<br/>
+<br/>
+<br/>
+这里用另一个好用的工具 btrace  <a href="https://kenai.com/projects/btrace/pages/UserGuide"><span style="font-kerning: none; color: #0433ff; -webkit-text-stroke: 0px #0433ff"><u>https://kenai.com/projects/btrace/pages/UserGuide</u></span></a><br/>
+这个工具太强大了！！！完全不用侵入原有代码，类似AOP原理，用btrace语法写完代码，直接在工程外运行，制定项目运行后的进程id即可拦截相应方法测试对应执行时常。<br/>
+<br/>
+我想测试某个类所有方法运行时长，写代码如下：<br/>
+</span><span style="font: 10.5px 'Trebuchet MS'; font-kerning: none; color: #ff2500; -webkit-text-stroke: 0px #ff2500"><b>import com.sun.btrace.annotations.*;     注意！！！！要全部引入！！！<br/>
+import static com.sun.btrace.BTraceUtils.*;<br/>
+</b></span><span style="font: 10.5px 'Trebuchet MS'; font-kerning: none; -webkit-text-stroke: 0px #000000">@BTrace<br/>
+public class BtraceTest {<br/>
+<br/>
+<span style="white-space:pre"	/>@TLS<br/>
+<span style="white-space:pre"	/>private static long startTime = 0;<br/>
+<br/>
+<span style="white-space:pre"	/>@OnMethod(clazz = "com.alibaba.base.dc.workspace.dao.WorkspaceDao", method = "/.*/")<br/>
+<span style="white-space:pre"	/>public static void startExecute() {<br/>
+<span style="white-space:pre"	/>  startTime = timeNanos();<br/>
+<span style="white-space:pre"	/>}<br/>
+<br/>
+<span style="white-space:pre"	/>@OnMethod(clazz = "com.alibaba.base.dc.workspace.dao.WorkspaceDao", method = "/.*/", location = @Location(Kind.RETURN))<br/>
+<span style="white-space:pre"	/>public static void endExecute(@Duration long duration,@ProbeMethodName String pmn) {<br/>
+<span style="white-space:pre"	/><span style="white-space:pre"	/>double time = (timeNanos() - startTime) / 1000000.0;//纳秒转毫秒<br/>
+<span style="white-space:pre"	/><span style="white-space:pre"	/>String method = strcat(pmn," excute time ");<br/>
+<span style="white-space:pre"	/><span style="white-space:pre"	/>println(strcat(method, str(time)));<br/>
+<span style="white-space:pre"	/><span style="white-space:pre"	/><br/>
+<span style="white-space:pre"	/>}<br/>
+}<br/>
+<br/>
+执行btrace 5848 A.java  这里5848是要检测进程进程号，这里btrace可以放环境变量里。<br/>
+<br/>
+很好很强大！！<br/>
+<br/>
+另一个工具：</span><span style="font: 10.5px Courier; font-kerning: none; color: #75715e; background-color: #222420; -webkit-text-stroke: 0px #75715e">greys</span><span style="font: 10.5px 'Trebuchet MS'; font-kerning: none; -webkit-text-stroke: 0px #000000"><br/></span><span style="font: 12.0px Helvetica; -webkit-text-stroke: 0px #000000">一.<span style="white-space:pre"	/></span><span style="font: 12.0px Times; font-kerning: none; color: #323333; -webkit-text-stroke: 0px #323333"><b>安装：<br/>
+</b></span><span style="font: 12.0px Times; font-kerning: none; -webkit-text-stroke: 0px #000000"> <img src="/images/2015-05-04/010F6EB7-2FC9-4567-B594-AAF65CB82188.png" height="210" width="1248"/></span><span style="font: 12.0px Helvetica; font-kerning: none; color: #323333; -webkit-text-stroke: 0px #323333"><br/>
+</span><span style="font: 10.5px 'Trebuchet MS'; font-kerning: none; color: #323333; -webkit-text-stroke: 0px #323333"><b>第二、使用篇：</b></span><span style="font: 10.5px Helvetica; font-kerning: none; color: #323333; -webkit-text-stroke: 0px #323333"><br/>
+<b>1)</b></span><span style="font: 10.5px 'Trebuchet MS'; font-kerning: none; color: #323333; -webkit-text-stroke: 0px #323333"><b>启动</b></span><span style="font: 12.0px Times; font-kerning: none; -webkit-text-stroke: 0px #000000"><br/>
+</span><span style="font: 12.0px Courier; font-kerning: none; color: #f8f8f2; background-color: #222420; -webkit-text-stroke: 0px #f8f8f2">./greys &lt;</span><span style="font: 12.0px Times; font-kerning: none; color: #f8f8f2; background-color: #222420; -webkit-text-stroke: 0px #f8f8f2">进程</span><span style="font: 12.0px Courier; font-kerning: none; color: #f8f8f2; background-color: #222420; -webkit-text-stroke: 0px #f8f8f2">pid&gt;[</span><span style="font: 12.0px Courier; font-kerning: none; color: #75715e; background-color: #222420; -webkit-text-stroke: 0px #75715e">@IP</span><span style="font: 12.0px Courier; font-kerning: none; color: #f8f8f2; background-color: #222420; -webkit-text-stroke: 0px #f8f8f2">:PORT]</span><span style="font: 10.0px Courier; font-kerning: none; color: #323333; -webkit-text-stroke: 0px #323333"><br/>
+</span><span style="font: 12.0px Times; font-kerning: none; color: #323333; -webkit-text-stroke: 0px #323333">若想监听他人线上服务器，需要服务器开启远程服务。下面积分预发服务器实验一下：</span><span style="font: 12.0px Helvetica; font-kerning: none; color: #323333; -webkit-text-stroke: 0px #323333"><br/>
+</span><span style="font: 12.0px Courier; font-kerning: none; color: #f8f8f2; background-color: #222420; -webkit-text-stroke: 0px #f8f8f2">[linqing.lq</span><span style="font: 12.0px Courier; font-kerning: none; color: #75715e; background-color: #222420; -webkit-text-stroke: 0px #75715e">@pointcenter</span><span style="font: 12.0px Courier; font-kerning: none; color: #f8f8f2; background-color: #222420; -webkit-text-stroke: 0px #f8f8f2">161069.pre.cm3 ~]$ cd greys/<br/>
+[linqing.lq</span><span style="font: 12.0px Courier; font-kerning: none; color: #75715e; background-color: #222420; -webkit-text-stroke: 0px #75715e">@pointcenter</span><span style="font: 12.0px Courier; font-kerning: none; color: #f8f8f2; background-color: #222420; -webkit-text-stroke: 0px #f8f8f2">161069.pre.cm3 greys]$ ls<br/>
+greys.jar  <a href="http://greys.sh">greys.sh</a><br/>
+</span><span style="font: 12.0px Times; font-kerning: none; color: #323333; -webkit-text-stroke: 0px #323333">还需要找到</span><span style="font: 12.0px Helvetica; font-kerning: none; color: #323333; -webkit-text-stroke: 0px #323333">java</span><span style="font: 12.0px Times; font-kerning: none; color: #323333; -webkit-text-stroke: 0px #323333">进程：</span><span style="font: 12.0px Helvetica; font-kerning: none; color: #323333; -webkit-text-stroke: 0px #323333"><br/>
+</span><span style="font: 12.0px Times; font-kerning: none; -webkit-text-stroke: 0px #000000"> <img src="/images/2015-05-04/407BEEEA-DA8C-4380-AD24-A332A3EAEB04.png" height="240" width="1242"/></span><span style="font: 12.0px Times; font-kerning: none; color: #323333; -webkit-text-stroke: 0px #323333"><br/>
+开始启动：</span></div><div><span style="font: 12.0px Times; font-kerning: none; -webkit-text-stroke: 0px #000000"><br/></span></div><div><span style="font-style: normal; font-variant-caps: normal; font-weight: normal; font-size: 12px; line-height: normal; font-family: Times; -webkit-font-kerning: none; -webkit-text-stroke-width: 0px;"><img src="/images/2015-05-04/1BFC3912-BD3A-451B-A51D-F1A8C2D29A0C.png" height="376" width="1158"/></span><span style="font: 12.0px Helvetica; font-kerning: none; color: #323333; -webkit-text-stroke: 0px #323333"><br/>
+</span><span style="font: 10.5px Helvetica; font-kerning: none; color: #323333; -webkit-text-stroke: 0px #323333"><b> 2</b></span><span style="font: 10.5px 'Trebuchet MS'; font-kerning: none; color: #323333; -webkit-text-stroke: 0px #323333"><b>）下面玩起来</b></span><span style="font: 10.5px Helvetica; font-kerning: none; color: #323333; -webkit-text-stroke: 0px #323333"><b>~</b><br/>
+</span><span style="font: 10.5px 'Trebuchet MS'; font-kerning: none; color: #323333; -webkit-text-stroke: 0px #323333">若想知道一个方法调用堆栈情况，</span><span style="font: 10.5px Helvetica; font-kerning: none; color: #323333; -webkit-text-stroke: 0px #323333"><b>jstack </b></span><span style="font: 10.5px 'Trebuchet MS'; font-kerning: none; color: #323333; -webkit-text-stroke: 0px #323333">命令：</span><span style="font: 10.5px Helvetica; font-kerning: none; color: #323333; -webkit-text-stroke: 0px #323333">jstack </span><span style="font: 10.5px 'Trebuchet MS'; font-kerning: none; color: #323333; -webkit-text-stroke: 0px #323333">类名（支持正则）</span><span style="font: 10.5px Helvetica; font-kerning: none; color: #323333; -webkit-text-stroke: 0px #323333" /><span style="font: 10.5px 'Trebuchet MS'; font-kerning: none; color: #323333; -webkit-text-stroke: 0px #323333">方法名（支持正则）</span><span style="font: 10.5px Helvetica; font-kerning: none; color: #323333; -webkit-text-stroke: 0px #323333"><br/>
+</span><span style="font: 10.5px 'Trebuchet MS'; font-kerning: none; -webkit-text-stroke: 0px #000000"> <img src="/images/2015-05-04/9A49FB27-D8FE-463A-B772-72C6ADFC1461.png" height="690" width="1238"/></span><span style="font: 10.0px Courier; font-kerning: none; color: #323333; -webkit-text-stroke: 0px #323333"><br/>
+</span><span style="font: 12.0px Helvetica; font-kerning: none; color: #323333; -webkit-text-stroke: 0px #323333"> </span><span style="font: 12.0px Times; font-kerning: none; color: #323333; -webkit-text-stroke: 0px #323333">有了这个方法，以后就不用担心</span><span style="font: 12.0px Helvetica; font-kerning: none; color: #323333; -webkit-text-stroke: 0px #323333">debug</span><span style="font: 12.0px Times; font-kerning: none; color: #323333; -webkit-text-stroke: 0px #323333">无从下手了</span><span style="font: 12.0px Helvetica; font-kerning: none; color: #323333; -webkit-text-stroke: 0px #323333">~~~<br/>
+<br/>
+</span><span style="font: 12.0px Times; font-kerning: none; color: #323333; -webkit-text-stroke: 0px #323333">若想知道线上某个方法某个时刻的调用记录情况，俗称保存现场，可以使用命令，</span><span style="font: 12.0px Helvetica; font-kerning: none; color: #323333; -webkit-text-stroke: 0px #323333">tt </span><span style="font: 12.0px Times; font-kerning: none; color: #323333; -webkit-text-stroke: 0px #323333">创建时间片，并对时间片中的记录进行分析</span></div><div><span style="font-style: normal; font-variant-caps: normal; font-weight: normal; font-size: 12px; line-height: normal; -webkit-font-kerning: none; color: rgb(50, 51, 51); -webkit-text-stroke-width: 0px; -webkit-text-stroke-color: rgb(50, 51, 51);"><font face="Times"><br/></font>
+</span><span style="font: 12.0px Times; font-kerning: none; -webkit-text-stroke: 0px #000000"> <img src="/images/2015-05-04/99331BCC-E2F2-44F8-B0C2-95C09B14015C.png" height="376" width="1232"/></span></div><div><span style="font-style: normal; font-variant-caps: normal; font-weight: normal; font-size: 12px; line-height: normal; -webkit-font-kerning: none; background-color: rgb(34, 36, 32); -webkit-text-stroke-width: 0px;"><font face="Times"><br/></font>
+</span><span style="font: 12.0px Times; font-kerning: none; color: #323333; -webkit-text-stroke: 0px #323333">创建完该时间片，则可以对该时间片的记录进行分析：</span><span style="font: 12.0px Helvetica; font-kerning: none; color: #323333; -webkit-text-stroke: 0px #323333"><br/>
+</span><span style="font: 12.0px Times; font-kerning: none; color: #323333; -webkit-text-stroke: 0px #323333">比如想看</span><span style="font: 12.0px Helvetica; font-kerning: none; color: #323333; -webkit-text-stroke: 0px #323333">index</span><span style="font: 12.0px Times; font-kerning: none; color: #323333; -webkit-text-stroke: 0px #323333">为</span><span style="font: 12.0px Helvetica; font-kerning: none; color: #323333; -webkit-text-stroke: 0px #323333">1104</span><span style="font: 12.0px Times; font-kerning: none; color: #323333; -webkit-text-stroke: 0px #323333">的调用情况，则可以使用</span></div><div><span style="font-style: normal; font-variant-caps: normal; font-weight: normal; font-size: 12px; line-height: normal; -webkit-font-kerning: none; color: rgb(50, 51, 51); -webkit-text-stroke-width: 0px; -webkit-text-stroke-color: rgb(50, 51, 51);"><font face="Times"><img src="/images/2015-05-04/550ADFD1-FDE1-4FBB-A24D-08027881614C.png" height="492" width="1238"/><br/></font>
+</span><span style="font: 12.0px Times; font-kerning: none; -webkit-text-stroke: 0px #000000"> </span><span style="font: 12.0px Helvetica; font-kerning: none; color: #323333; -webkit-text-stroke: 0px #323333"> </span><span style="font: 12.0px Times; font-kerning: none; color: #323333; -webkit-text-stroke: 0px #323333">若想知道当前方法的在单位时间内的调用情况（</span><span style="font: 12.0px Helvetica; font-kerning: none; color: #323333; -webkit-text-stroke: 0px #323333">total</span><span style="font: 12.0px Times; font-kerning: none; color: #323333; -webkit-text-stroke: 0px #323333">），响应时间</span><span style="font: 12.0px Helvetica; font-kerning: none; color: #323333; -webkit-text-stroke: 0px #323333">(rt)</span><span style="font: 12.0px Times; font-kerning: none; color: #323333; -webkit-text-stroke: 0px #323333">，则可以使用</span><span style="font: 12.0px Helvetica; font-kerning: none; color: #323333; -webkit-text-stroke: 0px #323333">monitor</span><span style="font: 12.0px Times; font-kerning: none; color: #323333; -webkit-text-stroke: 0px #323333">命令</span><span style="font: 12.0px Helvetica; font-kerning: none; color: #323333; -webkit-text-stroke: 0px #323333"><br/>
+</span><span style="font: 12.0px Times; font-kerning: none; -webkit-text-stroke: 0px #000000"> <img src="/images/2015-05-04/
+26BB7BBC-9ED0-4BFD-A6E3-3A71E0F0E81F.png" height="358" width="1236"/></span><span style="font: 12.0px Times; font-kerning: none; color: #323333; -webkit-text-stroke: 0px #323333"><br/>
+更多命令可以使用</span><span style="font: 12.0px Helvetica; font-kerning: none; color: #323333; -webkit-text-stroke: 0px #323333">help</span><span style="font: 12.0px Times; font-kerning: none; color: #323333; -webkit-text-stroke: 0px #323333">帮忙，或者查看原作者：杜琨的分享</span><span style="font: 12.0px Helvetica; font-kerning: none; color: #323333; -webkit-text-stroke: 0px #323333"><br/>
+<br/>
+</span><span style="font: 12.0px Times; font-kerning: none; color: #323333; -webkit-text-stroke: 0px #323333"><b>参考文章</b></span><span style="font: 12.0px Helvetica; font-kerning: none; color: #323333; -webkit-text-stroke: 0px #323333"><br/>
+<a href="http://www.atatech.org/articles/32324?rnd=92212490"><span style="font-kerning: none; color: #428bca; -webkit-text-stroke: 0px #428bca"><u>http://www.atatech.org/articles/32324?rnd=92212490</u><br/>
+</span></a><br/>
+<a href="https://github.com/oldmanpushcart/greys-anatomy">https://github.com/oldmanpushcart/greys-anatomy</a><br/>
+</span></div><div><br/></div>

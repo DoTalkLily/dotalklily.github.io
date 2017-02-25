@@ -72,5 +72,9 @@ archive_generator:
 
 # Deployment
 ## Docs: https://hexo.io/docs/deployment.html
+
 deploy:
-  type:
+  type: git
+  repo: https://github.com/DoTalkLily/dotalklily.github.io.git
+  branch: master
+

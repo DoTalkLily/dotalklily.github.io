@@ -1,0 +1,96 @@
+---
+layout: post
+title:  新手引导效果实现
+date:   2015-01-04 08:43:59
+author: Lily
+categories: frontend
+tags:
+- intro.js
+- 新手引导
+---
+<br>
+<br>
+
+新手效果在很多网站中都能看到，很好地引导用户了解网站相关操作从而降低学习成本。本文的新手引导效果基于 <a href="https://github.com/usablica/intro.js/">intro.js</a> 做了修改，介绍下引入方式，然后讲解下网站中常看到的右下角能展开收齐的帮助弹框实现方式。
+
+<div><div><h2 style=" padding: 0px; font-size: 24px; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: rgb(204, 204, 204); font-family: Helvetica, arial, sans-serif;">引入
+</h2><pre style="white-space: pre-wrap; border: 1px solid rgb(204, 204, 204); font-size: 13px; overflow: auto; padding: 6px 10px; border-top-left-radius: 3px; border-top-right-radius: 3px; border-bottom-right-radius: 3px; border-bottom-left-radius: 3px; background-color: rgb(248, 248, 248);font-family:&quot;Helvetica Neue&quot;, Arial, sans;">&lt;script type="text/javascript" src="<a style="color: rgb(149, 79, 114);" target="_blank" href="http://g.alicdn.com/base-tech-fe/base_fe_common/src/common/controller/intro.js">http://g.alicdn.com/base-tech-fe/base_fe_common/src/common/controller/intro.js</a>"&gt;&lt;/script&gt;                      
+&lt;link href="<a style="color: rgb(149, 79, 114);" target="_blank" href="http://g.alicdn.com/base-tech-fe/base_fe_common/src/common/styles/introjs.css">http://g.alicdn.com/base-tech-fe/base_fe_common/src/common/styles/introjs.css</a>" rel="stylesheet"&gt; 
+
+</pre><h3 style=" padding: 0px; font-size: 18px; font-family: Helvetica, arial, sans-serif;">注：插件用intro.js
+</h3><h3 style=" padding: 0px; font-size: 18px; font-family: Helvetica, arial, sans-serif;">html
+</h3><ul style=" padding-left: 30px; font-family: Helvetica, arial, sans-serif; font-size: 14px;"><li style="">在需要显示引导的元素里添加标识属性，如</li></ul><pre style="white-space: pre-wrap; border: 1px solid rgb(204, 204, 204); font-size: 13px; overflow: auto; padding: 6px 10px; border-top-left-radius: 3px; border-top-right-radius: 3px; border-bottom-right-radius: 3px; border-bottom-left-radius: 3px; background-color: rgb(248, 248, 248);font-family:&quot;Helvetica Neue&quot;, Arial, sans;">&lt;div data-step="1"&gt;&lt;/div&gt;
+
+</pre><h3 style=" padding: 0px; font-size: 18px; font-family: Helvetica, arial, sans-serif;">js
+</h3><ul style=" padding-left: 30px; font-family: Helvetica, arial, sans-serif; font-size: 14px;"><li style="">添加js</li></ul><pre style="white-space: pre-wrap; border: 1px solid rgb(204, 204, 204); font-size: 13px; overflow: auto; padding: 6px 10px; border-top-left-radius: 3px; border-top-right-radius: 3px; border-bottom-right-radius: 3px; border-bottom-left-radius: 3px; background-color: rgb(248, 248, 248);font-family:&quot;Helvetica Neue&quot;, Arial, sans;">function startIntro(){
+          var intro = introJs();
+            intro.setOptions({
+              steps: [
+                {
+                  element: '[data-step="1"]',
+                  intro: "这里是数据引擎提供的开发套件，如果当前区域为灰色，说明您选择的工作台模板暂时不需要该功能。 您可以在右上角的“设置-设置工作台”中开启相应的模块。",
+                  position: 'bottom'
+                },
+                {
+                  element: '[data-step="2"]',
+                  intro: "在这里可以管理项目的数据、数据服务、数据源和数据主题。",
+                  position: 'right'
+                },
+                {
+                  element: '[data-step="3"]',
+                  intro: '在这里可以为项目添加成员，管理成员权限，配置项目空间。',
+                  position: 'right'
+                }
+              ],
+              'nextLabel': "下一步",                                           
+              'prevLabel': "上一步",
+              'skipLabel': "跳过",
+              'doneLabel':"完成",
+              'showStepNumbers':false
+            });
+            intro.start();
+                   
+
+</pre><h1 style=" padding: 0px; font-size: 28px; font-family: Helvetica, arial, sans-serif;">tips添加方式
+</h1><h2 style=" padding: 0px; font-size: 24px; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: rgb(204, 204, 204); font-family: Helvetica, arial, sans-serif;">引入
+</h2><pre style="white-space: pre-wrap; border: 1px solid rgb(204, 204, 204); font-size: 13px; overflow: auto; padding: 6px 10px; border-top-left-radius: 3px; border-top-right-radius: 3px; border-bottom-right-radius: 3px; border-bottom-left-radius: 3px; background-color: rgb(248, 248, 248);font-family:&quot;Helvetica Neue&quot;, Arial, sans;">&lt;script type="text/javascript" src="<a style="color: rgb(149, 79, 114);" target="_blank" href="http://g.alicdn.com/base-tech-fe/base_fe_common/src/common/controller/tooltip.js">http://g.alicdn.com/base-tech-fe/base_fe_common/src/common/controller/tooltip.js</a>"&gt;&lt;/script&gt;
+
+</pre><h3 style=" padding: 0px; font-size: 18px; font-family: Helvetica, arial, sans-serif;">html
+</h3><pre style="white-space: pre-wrap; border: 1px solid rgb(204, 204, 204); font-size: 13px; overflow: auto; padding: 6px 10px; border-top-left-radius: 3px; border-top-right-radius: 3px; border-bottom-right-radius: 3px; border-bottom-left-radius: 3px; background-color: rgb(248, 248, 248);font-family:&quot;Helvetica Neue&quot;, Arial, sans;">&lt;div class="toolTip" data-tooltip title="tenant1"&gt;&lt;/div&gt;
+
+</pre><h3 style=" padding: 0px; font-size: 18px; font-family: Helvetica, arial, sans-serif;">js
+</h3><pre style="white-space: pre-wrap; border: 1px solid rgb(204, 204, 204); font-size: 13px; overflow: auto; padding: 6px 10px; border-top-left-radius: 3px; border-top-right-radius: 3px; border-bottom-right-radius: 3px; border-bottom-left-radius: 3px; background-color: rgb(248, 248, 248);font-family:&quot;Helvetica Neue&quot;, Arial, sans;">var keyMap = {
+    'tenant1': '提供一站式的数据集成开发环境，包括数据查询、ETL开发、数据算法挖掘等功能。'
+};
+$('[data-tooltip]').tooltip({verticalOffset:-200, horizontalOffset:20, keyMap: keyMap});
+
+</pre><h1 style=" padding: 0px; font-size: 28px; font-family: Helvetica, arial, sans-serif;">右下角帮助添加方式
+</h1><div style="font-family:&quot;Helvetica Neue&quot;, Arial, sans;font-size:16px;">效果：
+</div><div style="font-family:&quot;Helvetica Neue&quot;, Arial, sans;font-size:16px;"><img src="/images/2015-01-04/49A49378-4E4E-47C0-ACE3-E9819A21CD27.png" height="267" width="176"/><br/></div><h2 style=" padding: 0px; font-size: 24px; border-bottom-width: 1px; border-bottom-style: solid; border-bottom-color: rgb(204, 204, 204); font-family: Helvetica, arial, sans-serif;">引入
+</h2><pre style="white-space: pre-wrap; border: 1px solid rgb(204, 204, 204); font-size: 13px; overflow: auto; padding: 6px 10px; border-top-left-radius: 3px; border-top-right-radius: 3px; border-bottom-right-radius: 3px; border-bottom-left-radius: 3px; background-color: rgb(248, 248, 248);font-family:&quot;Helvetica Neue&quot;, Arial, sans;">&lt;script src="<a style="color: rgb(149, 79, 114);" target="_blank" href="http://g.alicdn.com/base-tech-fe/base_fe_common/src/common/controller/helper.js">http://g.alicdn.com/base-tech-fe/base_fe_common/src/common/controller/helper.js</a>"&gt;&lt;/script&gt;
+&lt;link rel="stylesheet" href="<a style="color: rgb(149, 79, 114);" target="_blank" href="http://g.alicdn.com/base-tech-fe/base_fe_common/src/common/styles/helper.css">http://g.alicdn.com/base-tech-fe/base_fe_common/src/common/styles/helper.css</a>"/&gt;
+
+</pre><h3 style=" padding: 0px; font-size: 18px; font-family: Helvetica, arial, sans-serif;">html
+</h3><pre style="white-space: pre-wrap; border: 1px solid rgb(204, 204, 204); font-size: 13px; overflow: auto; padding: 6px 10px; border-top-left-radius: 3px; border-top-right-radius: 3px; border-bottom-right-radius: 3px; border-bottom-left-radius: 3px; background-color: rgb(248, 248, 248);font-family:&quot;Helvetica Neue&quot;, Arial, sans;">&lt;div id="helper" class="j-helper"&gt;
+        &lt;h1&gt;FAQ&lt;/h1&gt;
+        &lt;ul&gt;
+            &lt;li&gt;&lt;a href=""&gt;xxxxxxxxxxxxxxxxxxxxx&lt;/a&gt;&lt;/li&gt;
+            &lt;li&gt;&lt;a href=""&gt;xxxxxxxxxxxxxxxxxxxxx&lt;/a&gt;&lt;/li&gt;
+            &lt;li&gt;&lt;a href=""&gt;xxxxxxxxxxxxxxxxxxxxx&lt;/a&gt;&lt;/li&gt;
+            &lt;li&gt;&lt;a href=""&gt;xxxxxxxxxxxxxxxxxxxxx&lt;/a&gt;&lt;/li&gt;
+            &lt;li&gt;&lt;a href=""&gt;xxxxxxxxxxxxxxxxxxxxx&lt;/a&gt;&lt;/li&gt;
+        &lt;/ul&gt;
+        &lt;a class="more" href=""&gt;查看更多&lt;/a&gt;
+    &lt;/div&gt;
+
+</pre><h3 style=" padding: 0px; font-size: 18px; font-family: Helvetica, arial, sans-serif;">js
+</h3></div><pre style="white-space: pre-wrap; border: 1px solid rgb(204, 204, 204); font-size: 13px; overflow: auto; padding: 6px 10px; border-top-left-radius: 3px; border-top-right-radius: 3px; border-bottom-right-radius: 3px; border-bottom-left-radius: 3px; background-color: rgb(248, 248, 248);font-family:monospace;">       var helper = $.helper({
+            content: '#helper',
+            titleBtn: {
+                text: '重看新手引导',
+                callback: function(){
+                    startIntro();
+                }
+            }
+        });
+</pre></div><div><br/></div>
